@@ -1,5 +1,5 @@
 {
-  "name": "mongoose-fuzzy-searching",
+  "name": "mongoose-fuzzy-search",
   "version": "2.0.2",
   "author": "Vassilis Pallas <vspallas@gmail.com>",
   "description": "Mongoose fuzzy searching plugin",
@@ -41,7 +41,7 @@
   "homepage": "https://github.com/VassilisPallas/mongoose-fuzzy-searching",
   "license": "MIT",
   "peerDependencies": {
-    "mongoose": "5.10.x"
+    "mongoose": "^7.6.1"
   },
   "devDependencies": {
     "eslint": "^6.8.0",
@@ -54,7 +54,7 @@
     "jest": "^26.0.1",
     "lint-staged": "^10.2.2",
     "mongodb-memory-server": "^6.6.0",
-    "mongoose": "^5.10.11",
+    "mongoose": "^7.6.1",
     "prettier": "^2.0.5"
   }
 }
