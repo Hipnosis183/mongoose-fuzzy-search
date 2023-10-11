@@ -4,14 +4,14 @@ const createSchemaObject = (typeValue, options) => ({
 });
 
 const addToSchema = (name) => ({
-  [`${name}_fuzzy`]: createSchemaObject([String], {
+  [`fuzzy.${name}`]: createSchemaObject([String], {
     default: '',
     index: false,
   }),
 });
 
 const addArrayToSchema = (MixedType) => (name) => ({
-  [`${name}_fuzzy`]: createSchemaObject(MixedType, {
+  [`fuzzy.${name}`]: createSchemaObject(MixedType, {
     default: [],
     index: false,
   }),

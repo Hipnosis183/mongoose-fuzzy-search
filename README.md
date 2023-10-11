@@ -8,25 +8,28 @@ This code is based on [this article](https://medium.com/xeneta/fuzzy-search-with
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FVassilisPallas%2Fmongoose-fuzzy-searching.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FVassilisPallas%2Fmongoose-fuzzy-searching?ref=badge_shield)
 
-- [Features](#features)
-- [Install](#install)
-- [Getting started](#getting-started)
-  - [Initialize plugin](#initialize-plugin)
-  - [Plugin options](#plugin-options)
-    - [Fields](#fields)
-      - [String field](#string-field)
-      - [Object field](#object-field)
-    - [Middlewares](#middlewares)
-- [Query parameters](#query-parameters)
-  - [Instance method](#instance-method)
-  - [Query helper](#query-helper)
-- [Working with pre-existing data](#working-with-pre-existing-data)
-  - [Update all pre-existing documents with ngrams](#update-all-pre-existing-documents-with-ngrams)
-  - [Delete old ngrams from all documents](#delete-old-ngrams-from-all-documents)
-- [Testing and code coverage](#testing-and-code-coverage)
-  - [All tests](#all-tests)
-  - [Available test suites](#available-test-suites)
-- [License](#license)
+- [Mongoose Fuzzy Searching](#mongoose-fuzzy-searching)
+  - [Features](#features)
+  - [Install](#install)
+  - [Getting started](#getting-started)
+    - [Initialize plugin](#initialize-plugin)
+    - [Plugin options](#plugin-options)
+      - [Fields](#fields)
+        - [String field](#string-field)
+        - [Object field](#object-field)
+      - [Middlewares](#middlewares)
+  - [Query parameters](#query-parameters)
+    - [Instance method](#instance-method)
+    - [Query helper](#query-helper)
+  - [Working with pre-existing data](#working-with-pre-existing-data)
+    - [Update all pre-existing documents with ngrams](#update-all-pre-existing-documents-with-ngrams)
+    - [Delete old ngrams from all documents](#delete-old-ngrams-from-all-documents)
+  - [Testing and code coverage](#testing-and-code-coverage)
+    - [All tests](#all-tests)
+    - [Available test suites](#available-test-suites)
+      - [unit tests](#unit-tests)
+      - [Integration tests](#integration-tests)
+  - [License](#license)
 
 ## Features
 
@@ -90,7 +93,7 @@ module.exports = { User };
 const user = new User({ firstName: 'Joe', lastName: 'Doe', email: 'joe.doe@mail.com', age: 30 });
 
 try {
-  await user.save(); // mongodb: { ..., firstName_fuzzy: [String], lastName_fuzzy: [String] }
+  await user.save(); // mongodb: { ..., fuzzy: { firstName: [String], lastName: [String] }}
   const users = await User.fuzzySearch('jo');
 
   console.log(users);
@@ -338,7 +341,7 @@ const user = await User.find({ age: { $gte: 30 } })
 
 ## Working with pre-existing data
 
-The plugin creates indexes for the selected fields. In the below example the new indexes will be `firstName_fuzzy` and `lastName_fuzzy`. Also, each document will have the fields `firstName_fuzzy`[String] and `lastName_fuzzy`[String]. These arrays will contain the anagrams for the selected fields.
+The plugin creates indexes for the selected fields. In the below example the new indexes will be `firstName` and `lastName`. Also, each document will have the fields `firstName`[String] and `lastName`[String] inside the `fuzzy` object. These arrays will contain the anagrams for the selected fields.
 
 ```javascript
 const mongoose_fuzzy_searching = require('mongoose-fuzzy-searching');
@@ -369,12 +372,12 @@ cursor.next(function (error, doc) {
 
 ### Delete old ngrams from all documents
 
-In the previous example, we set `firstName` and `lastName` as the fuzzy attributes. If you remove the `firstName` from the fuzzy fields, the `firstName_fuzzy` array will not be removed by the collection. If you want to remove the array on each document you have to unset that value.
+In the previous example, we set `firstName` and `lastName` as the fuzzy attributes. If you remove the `firstName` from the fuzzy fields, the `firstName` array will not be removed by the collection. If you want to remove the array on each document you have to unset that value.
 
 ```javascript
 const cursor = Model.find().cursor();
 cursor.next(function (error, doc) {
-  const $unset = attrs.reduce((acc, attr) => ({ ...acc, [`${attr}_fuzzy`]: 1 }), {});
+  const $unset = attrs.reduce((acc, attr) => ({ ...acc, fuzzy: {[`${attr}`]: 1 }}), {});
   return Model.findByIdAndUpdate(data._id, { $unset }, { new: true, strict: false });
 });
 ```

@@ -10,20 +10,20 @@ class Create {
 
   fromString(item) {
     this.schema.add(this.addToSchema(item));
-    this.indexes[`${item}_fuzzy`] = 'text';
+    this.indexes[`fuzzy.${item}`] = 'text';
   }
 
   fromObject(item) {
     this.schema.add(this.addToSchema(item.name));
-    this.indexes[`${item.name}_fuzzy`] = 'text';
+    this.indexes[`fuzzy.${item.name}`] = 'text';
     if (item.weight) {
-      this.weights[`${item.name}_fuzzy`] = item.weight;
+      this.weights[`fuzzy.${item.name}`] = item.weight;
     }
   }
 
   fromObjectKeys(item) {
     item.keys.forEach((key) => {
-      this.indexes[`${item.name}_fuzzy.${key}_fuzzy`] = 'text';
+      this.indexes[`fuzzy.${item.name}.${key}`] = 'text';
     });
     this.schema.add(this.addArrayToSchema(this.Type)(item.name));
   }
@@ -35,15 +35,15 @@ class Remove {
   }
 
   fromString(item) {
-    delete this.schema[`${item}_fuzzy`];
+    delete this.schema.fuzzy[item.name];
   }
 
   fromObject(item) {
-    delete this.schema[`${item.name}_fuzzy`];
+    delete this.schema.fuzzy[item.name];
   }
 
   fromObjectKeys(item) {
-    delete this.schema[`${item.name}_fuzzy`];
+    delete this.schema.fuzzy[item.name];
   }
 }
 
@@ -60,12 +60,12 @@ class Generate {
         value = value.join(' ');
       }
 
-      this.attributes[`${item}_fuzzy`] = this.makeNGrams(value);
+      this.attributes.fuzzy[item] = this.makeNGrams(value);
     }
   }
 
   fromObject(item) {
-    let value = this.attributes[`${item.name}`];
+    let value = this.attributes[item.name];
     if (value) {
       const escapeSpecialCharacters = item.escapeSpecialCharacters !== false;
 
@@ -73,7 +73,7 @@ class Generate {
         value = value.join(' ');
       }
 
-      this.attributes[`${item.name}_fuzzy`] = this.makeNGrams(
+      this.attributes.fuzzy[item.name] = this.makeNGrams(
         value,
         escapeSpecialCharacters,
         item.minSize,
@@ -83,7 +83,7 @@ class Generate {
   }
 
   fromObjectKeys(item) {
-    if (this.attributes[`${item.name}`]) {
+    if (this.attributes[item.name]) {
       const escapeSpecialCharacters = item.escapeSpecialCharacters !== false;
       const attrs = [];
       let obj = {};
@@ -97,17 +97,17 @@ class Generate {
         item.keys.forEach((key) => {
           obj = {
             ...obj,
-            [`${key}_fuzzy`]: this.makeNGrams(
+            fuzzy: {[key]: this.makeNGrams(
               d[key],
               escapeSpecialCharacters,
               item.minSize,
               item.prefixOnly,
-            ),
+            )},
           };
         });
         attrs.push(obj);
       });
-      this.attributes[`${item.name}_fuzzy`] = attrs;
+      this.attributes.fuzzy[item.name] = attrs;
     }
   }
 }
@@ -150,7 +150,7 @@ const createFields = (addToSchema, addArrayToSchema, createField, MixedType) => 
  */
 const removeFuzzyElements = (createField) => (fields) => (_doc, ret) => {
   const remove = new Remove(ret);
-  fields.forEach(createField(remove));
+  delete remove.schema.fuzzy;
   return remove.schema;
 };
 
